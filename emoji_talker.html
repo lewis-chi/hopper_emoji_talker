@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Talker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fff8f0;
+    --surface: #ffffff;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --text: #2d2d2d;
+    --shadow: rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    background-image: radial-gradient(circle at 20% 20%, #ffe8e8 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, #e8f4ff 0%, transparent 50%),
+                      radial-gradient(circle at 60% 10%, #fffbe8 0%, transparent 40%);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
+    color: var(--text);
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+
+  h1 span {
+    display: inline-block;
+    animation: wobble 2.5s ease-in-out infinite;
+  }
+  h1 span:nth-child(2) { animation-delay: 0.15s; color: var(--accent1); }
+  h1 span:nth-child(3) { animation-delay: 0.3s; color: var(--accent4); }
+  h1 span:nth-child(4) { animation-delay: 0.45s; color: var(--accent3); }
+  h1 span:nth-child(5) { animation-delay: 0.6s; color: var(--accent2); filter: brightness(0.85); }
+  h1 span:nth-child(6) { animation-delay: 0.75s; }
+  h1 span:nth-child(7) { animation-delay: 0.9s; color: var(--accent1); }
+  h1 span:nth-child(8) { animation-delay: 1.05s; color: var(--accent4); }
+  h1 span:nth-child(9) { animation-delay: 1.2s; color: var(--accent3); }
+  h1 span:nth-child(10) { animation-delay: 1.35s; }
+  h1 span:nth-child(11) { animation-delay: 1.5s; color: var(--accent2); filter: brightness(0.85); }
+  h1 span:nth-child(12) { animation-delay: 1.65s; }
+
+  @keyframes wobble {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #888;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  /* Speech bubble display */
+  .speech-bubble {
+    position: relative;
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 14px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px var(--shadow);
+    min-width: 200px;
+    text-align: center;
+    transition: transform 0.2s, background 0.2s;
+    border: 3px solid #ffe0b2;
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 16px solid #ffe0b2;
+  }
+
+  .speech-bubble.speaking {
+    background: #fff3e0;
+    transform: scale(1.04);
+    border-color: var(--accent1);
+  }
+  .speech-bubble.speaking::after {
+    border-top-color: var(--accent1);
+  }
+
+  .bubble-emoji {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .bubble-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    color: var(--text);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    min-height: 1.8rem;
+  }
+
+  /* Category tabs */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+    max-width: 700px;
+  }
+
+  .tab {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: white;
+    color: #666;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px var(--shadow);
+    user-select: none;
+  }
+
+  .tab:hover { transform: translateY(-2px); }
+  .tab.active {
+    background: var(--accent4);
+    color: white;
+    border-color: var(--accent4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(77,150,255,0.4);
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 14px;
+    max-width: 720px;
+    width: 100%;
+  }
+
+  .emoji-btn {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--shadow);
+    transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.12s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 8px 4px 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .emoji-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.9) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: inherit;
+  }
+
+  .emoji-btn:hover {
+    transform: translateY(-4px) scale(1.07);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+  }
+
+  .emoji-btn:active, .emoji-btn.pop {
+    transform: scale(0.88);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .emoji-btn.pop::before { opacity: 1; }
+
+  .emoji-glyph {
+    font-size: 2.6rem;
+    line-height: 1;
+    margin-bottom: 4px;
+    pointer-events: none;
+  }
+
+  .emoji-label {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Color bands by category */
+  .cat-animals .emoji-btn { border-bottom: 3px solid #6bcb77; }
+  .cat-food .emoji-btn { border-bottom: 3px solid #ffd93d; }
+  .cat-nature .emoji-btn { border-bottom: 3px solid #4d96ff; }
+  .cat-faces .emoji-btn { border-bottom: 3px solid #ff6b6b; }
+  .cat-objects .emoji-btn { border-bottom: 3px solid #c77dff; }
+  .cat-travel .emoji-btn { border-bottom: 3px solid #ff9f43; }
+
+  /* Sentence strip */
+  .strip-wrapper {
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 20px;
+  }
+
+  .strip-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+
+  .strip {
+    background: white;
+    border-radius: 20px;
+    border: 3px dashed #d0e8ff;
+    padding: 12px 14px;
+    min-height: 70px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px var(--shadow);
+    transition: border-color 0.2s;
+  }
+
+  .strip.has-items {
+    border-color: var(--accent4);
+    border-style: solid;
+  }
+
+  .strip-placeholder {
+    color: #ccc;
+    font-weight: 700;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .strip-chip {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f0f6ff;
+    border-radius: 12px;
+    padding: 5px 10px 4px;
+    cursor: pointer;
+    transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), background 0.1s;
+    border: 2px solid #d8eaff;
+    user-select: none;
+    animation: chipPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes chipPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .strip-chip:hover {
+    background: #ffeaea;
+    border-color: #ffb3b3;
+    transform: scale(1.08);
+  }
+
+  .strip-chip-emoji { font-size: 1.4rem; line-height: 1; }
+  .strip-chip-word {
+    font-size: 0.58rem;
+    font-weight: 900;
+    color: #6699cc;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+  }
+
+  .strip-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+
+  .strip-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.82rem;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .strip-btn-speak {
+    background: var(--accent4);
+    color: white;
+  }
+  .strip-btn-speak:hover { background: #3a82f0; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(77,150,255,0.4); }
+
+  .strip-btn-clear {
+    background: white;
+    color: #aaa;
+    border: 2px solid #eee;
+  }
+  .strip-btn-clear:hover { background: #fff0f0; color: var(--accent1); border-color: var(--accent1); transform: translateY(-2px); }
+
+  .strip-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* No speech support warning */
+  .warning {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #7d5a00;
+    text-align: center;
+    max-width: 500px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 10px; }
+    .emoji-glyph { font-size: 2.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span>E</span><span>m</span><span>o</span><span>j</span><span>i</span>
+    <span> </span>
+    <span>T</span><span>a</span><span>l</span><span>k</span><span>e</span><span>r</span>
+  </h1>
+  <p class="subtitle">Tap an emoji to hear its name! 🔊</p>
+</header>
+
+<div class="warning" id="noSpeechWarning">
+  ⚠️ Your browser doesn't support speech. Try Chrome or Safari!
+</div>
+
+<div class="speech-bubble" id="bubble">
+  <span class="bubble-emoji" id="bubbleEmoji">👆</span>
+  <div class="bubble-text" id="bubbleText">tap one!</div>
+</div>
+
+<div class="strip-wrapper">
+  <div class="strip-label">📝 Your sentence</div>
+  <div class="strip" id="strip">
+    <span class="strip-placeholder" id="stripPlaceholder">tap emojis to build a sentence…</span>
+  </div>
+  <div class="strip-actions">
+    <button class="strip-btn strip-btn-clear" id="btnClear" disabled onclick="clearStrip()">🗑 Clear</button>
+    <button class="strip-btn strip-btn-speak" id="btnSpeakAll" disabled onclick="speakAll()">🔊 Say it all</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const EMOJIS = {
+  animals: [
+    { e: '🐶', n: 'dog' }, { e: '🐱', n: 'cat' }, { e: '🐭', n: 'mouse' },
+    { e: '🐹', n: 'hamster' }, { e: '🐰', n: 'rabbit' }, { e: '🦊', n: 'fox' },
+    { e: '🐻', n: 'bear' }, { e: '🐼', n: 'panda' }, { e: '🐨', n: 'koala' },
+    { e: '🐯', n: 'tiger' }, { e: '🦁', n: 'lion' }, { e: '🐮', n: 'cow' },
+    { e: '🐷', n: 'pig' }, { e: '🐸', n: 'frog' }, { e: '🐵', n: 'monkey' },
+    { e: '🐔', n: 'chicken' }, { e: '🐧', n: 'penguin' }, { e: '🐦', n: 'bird' },
+    { e: '🦆', n: 'duck' }, { e: '🦅', n: 'eagle' }, { e: '🦉', n: 'owl' },
+    { e: '🦇', n: 'bat' }, { e: '🐺', n: 'wolf' }, { e: '🐗', n: 'boar' },
+    { e: '🐴', n: 'horse' }, { e: '🦄', n: 'unicorn' }, { e: '🐝', n: 'bee' },
+    { e: '🐛', n: 'caterpillar' }, { e: '🦋', n: 'butterfly' }, { e: '🐌', n: 'snail' },
+    { e: '🐞', n: 'ladybug' }, { e: '🐜', n: 'ant' }, { e: '🦟', n: 'mosquito' },
+    { e: '🦎', n: 'lizard' }, { e: '🐍', n: 'snake' }, { e: '🦕', n: 'dinosaur' },
+    { e: '🦖', n: 'T-rex' }, { e: '🐢', n: 'turtle' }, { e: '🐊', n: 'crocodile' },
+    { e: '🦈', n: 'shark' }, { e: '🐬', n: 'dolphin' }, { e: '🐳', n: 'whale' },
+    { e: '🐟', n: 'fish' }, { e: '🐙', n: 'octopus' }, { e: '🦑', n: 'squid' },
+    { e: '🦞', n: 'lobster' }, { e: '🦀', n: 'crab' }, { e: '🐘', n: 'elephant' },
+    { e: '🦏', n: 'rhino' }, { e: '🦒', n: 'giraffe' }, { e: '🦓', n: 'zebra' },
+    { e: '🦘', n: 'kangaroo' }, { e: '🐆', n: 'leopard' }, { e: '🦌', n: 'deer' },
+  ],
+  faces: [
+    { e: '😀', n: 'happy' }, { e: '😂', n: 'laughing' }, { e: '🥹', n: 'touched' },
+    { e: '😍', n: 'heart eyes' }, { e: '🥰', n: 'in love' }, { e: '😎', n: 'cool' },
+    { e: '🤩', n: 'star struck' }, { e: '🥳', n: 'party' }, { e: '😴', n: 'sleeping' },
+    { e: '😱', n: 'shocked' }, { e: '🤔', n: 'thinking' }, { e: '😤', n: 'huffing' },
+    { e: '🤯', n: 'mind blown' }, { e: '🤑', n: 'money mouth' }, { e: '😜', n: 'winking tongue' },
+    { e: '🥸', n: 'disguised' }, { e: '🤠', n: 'cowboy' }, { e: '👻', n: 'ghost' },
+    { e: '💀', n: 'skull' }, { e: '🤖', n: 'robot' }, { e: '👽', n: 'alien' },
+    { e: '🎃', n: 'jack-o-lantern' }, { e: '😺', n: 'cat smile' }, { e: '🙈', n: 'see no evil' },
+  ],
+  food: [
+    { e: '🍎', n: 'apple' }, { e: '🍌', n: 'banana' }, { e: '🍓', n: 'strawberry' },
+    { e: '🍕', n: 'pizza' }, { e: '🍔', n: 'burger' }, { e: '🌮', n: 'taco' },
+    { e: '🍦', n: 'ice cream' }, { e: '🍩', n: 'donut' }, { e: '🎂', n: 'birthday cake' },
+    { e: '🍫', n: 'chocolate' }, { e: '🍿', n: 'popcorn' }, { e: '🍕', n: 'pizza' },
+    { e: '🥑', n: 'avocado' }, { e: '🍉', n: 'watermelon' }, { e: '🍇', n: 'grapes' },
+    { e: '🥦', n: 'broccoli' }, { e: '🥕', n: 'carrot' }, { e: '🌽', n: 'corn' },
+    { e: '🍄', n: 'mushroom' }, { e: '🧀', n: 'cheese' }, { e: '🥚', n: 'egg' },
+    { e: '🧁', n: 'cupcake' }, { e: '🍭', n: 'lollipop' }, { e: '🍪', n: 'cookie' },
+  ],
+  nature: [
+    { e: '🌈', n: 'rainbow' }, { e: '⭐', n: 'star' }, { e: '🌙', n: 'moon' },
+    { e: '☀️', n: 'sun' }, { e: '⛄', n: 'snowman' }, { e: '🌊', n: 'wave' },
+    { e: '🌸', n: 'blossom' }, { e: '🌻', n: 'sunflower' }, { e: '🌲', n: 'tree' },
+    { e: '🍀', n: 'clover' }, { e: '🍂', n: 'leaf' }, { e: '🌵', n: 'cactus' },
+    { e: '🌋', n: 'volcano' }, { e: '🌍', n: 'earth' }, { e: '💧', n: 'water drop' },
+    { e: '❄️', n: 'snowflake' }, { e: '⚡', n: 'lightning' }, { e: '🔥', n: 'fire' },
+    { e: '🌪️', n: 'tornado' }, { e: '🌈', n: 'rainbow' }, { e: '🌺', n: 'hibiscus' },
+    { e: '🐚', n: 'shell' }, { e: '🪸', n: 'coral' }, { e: '🍁', n: 'maple leaf' },
+  ],
+  travel: [
+    { e: '🚀', n: 'rocket' }, { e: '✈️', n: 'airplane' }, { e: '🚗', n: 'car' },
+    { e: '🚂', n: 'train' }, { e: '🚢', n: 'ship' }, { e: '🏰', n: 'castle' },
+    { e: '🗽', n: 'statue of liberty' }, { e: '🏔️', n: 'mountain' }, { e: '🏖️', n: 'beach' },
+    { e: '🚁', n: 'helicopter' }, { e: '🛸', n: 'flying saucer' }, { e: '🚂', n: 'train' },
+    { e: '⛵', n: 'sailboat' }, { e: '🎡', n: 'ferris wheel' }, { e: '🎠', n: 'carousel' },
+    { e: '🗺️', n: 'map' }, { e: '🧭', n: 'compass' }, { e: '⛺', n: 'tent' },
+    { e: '🏕️', n: 'campsite' }, { e: '🌉', n: 'bridge' }, { e: '🎆', n: 'fireworks' },
+  ],
+  objects: [
+    { e: '⚽', n: 'soccer ball' }, { e: '🏀', n: 'basketball' }, { e: '🎸', n: 'guitar' },
+    { e: '🎹', n: 'piano' }, { e: '🎺', n: 'trumpet' }, { e: '🥁', n: 'drums' },
+    { e: '📚', n: 'books' }, { e: '🔭', n: 'telescope' }, { e: '🔬', n: 'microscope' },
+    { e: '💻', n: 'laptop' }, { e: '📱', n: 'phone' }, { e: '🎮', n: 'game controller' },
+    { e: '🧩', n: 'puzzle' }, { e: '🎨', n: 'art' }, { e: '✏️', n: 'pencil' },
+    { e: '🔑', n: 'key' }, { e: '💡', n: 'light bulb' }, { e: '🧲', n: 'magnet' },
+    { e: '🪄', n: 'magic wand' }, { e: '🎩', n: 'top hat' }, { e: '👑', n: 'crown' },
+    { e: '💎', n: 'diamond' }, { e: '🏆', n: 'trophy' }, { e: '🎁', n: 'gift' },
+  ]
+};
+
+const CATEGORY_LABELS = {
+  animals: '🐾 Animals',
+  faces: '😀 Faces',
+  food: '🍕 Food',
+  nature: '🌿 Nature',
+  travel: '✈️ Travel',
+  objects: '🎸 Objects',
+};
+
+let currentCat = 'animals';
+let stripItems = []; // { e, n }
+
+function addToStrip(emoji, name) {
+  stripItems.push({ e: emoji, n: name });
+  renderStrip();
+}
+
+function removeFromStrip(index) {
+  stripItems.splice(index, 1);
+  renderStrip();
+}
+
+function clearStrip() {
+  stripItems = [];
+  renderStrip();
+}
+
+function speakAll() {
+  if (!stripItems.length) return;
+  const text = stripItems.map(i => i.n).join(', ');
+  const emojiStr = stripItems.map(i => i.e).join(' ');
+  speak(text, emojiStr.length > 12 ? '🗣️' : emojiStr);
+}
+
+function renderStrip() {
+  const strip = document.getElementById('strip');
+  const placeholder = document.getElementById('stripPlaceholder');
+  const btnClear = document.getElementById('btnClear');
+  const btnSpeakAll = document.getElementById('btnSpeakAll');
+
+  // Remove old chips (keep placeholder)
+  strip.querySelectorAll('.strip-chip').forEach(c => c.remove());
+
+  if (stripItems.length === 0) {
+    placeholder.style.display = '';
+    strip.classList.remove('has-items');
+    btnClear.disabled = true;
+    btnSpeakAll.disabled = true;
+  } else {
+    placeholder.style.display = 'none';
+    strip.classList.add('has-items');
+    btnClear.disabled = false;
+    btnSpeakAll.disabled = false;
+
+    stripItems.forEach(({ e, n }, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'strip-chip';
+      chip.title = `Click to remove "${n}"`;
+      chip.innerHTML = `<span class="strip-chip-emoji">${e}</span><span class="strip-chip-word">${n}</span>`;
+      chip.addEventListener('click', () => removeFromStrip(i));
+      strip.appendChild(chip);
+    });
+  }
+}
+
+
+let synth = window.speechSynthesis;
+let voices = [];
+
+// Load voices
+function loadVoices() {
+  voices = synth.getVoices();
+}
+loadVoices();
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text, emoji) {
+  if (!synth) return;
+  synth.cancel();
+
+  const bubble = document.getElementById('bubble');
+  const bubbleText = document.getElementById('bubbleText');
+  const bubbleEmoji = document.getElementById('bubbleEmoji');
+
+  bubbleText.textContent = text;
+  bubbleEmoji.textContent = emoji;
+  bubble.classList.add('speaking');
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.85;
+  utt.pitch = 1.2;
+  utt.volume = 1;
+
+  // prefer a friendly voice
+  const preferred = voices.find(v =>
+    v.name.includes('Samantha') || v.name.includes('Karen') ||
+    v.name.includes('Moira') || v.name.includes('Daniel') ||
+    v.lang.startsWith('en')
+  );
+  if (preferred) utt.voice = preferred;
+
+  utt.onend = () => bubble.classList.remove('speaking');
+  utt.onerror = () => bubble.classList.remove('speaking');
+
+  synth.speak(utt);
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  Object.entries(CATEGORY_LABELS).forEach(([key, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (key === currentCat ? ' active' : '');
+    btn.textContent = label;
+    btn.onclick = () => {
+      currentCat = key;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderGrid();
+    };
+    tabs.appendChild(btn);
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.className = `grid cat-${currentCat}`;
+  grid.innerHTML = '';
+
+  const items = EMOJIS[currentCat] || [];
+  items.forEach(({ e, n }) => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-btn';
+    btn.innerHTML = `<span class="emoji-glyph">${e}</span><span class="emoji-label">${n}</span>`;
+    btn.setAttribute('aria-label', n);
+
+    btn.addEventListener('click', () => {
+      // Pop animation
+      btn.classList.add('pop');
+      setTimeout(() => btn.classList.remove('pop'), 200);
+      speak(n, e);
+      addToStrip(e, n);
+    });
+
+    grid.appendChild(btn);
+  });
+}
+
+// Check speech support
+if (!window.speechSynthesis) {
+  document.getElementById('noSpeechWarning').style.display = 'block';
+}
+
+renderTabs();
+renderGrid();
+</script>
+</body>
+</html>
