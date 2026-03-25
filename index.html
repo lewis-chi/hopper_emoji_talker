@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emoji Talker</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -17,7 +17,7 @@
     --shadow: rgba(0,0,0,0.12);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
   body {
     font-family: 'Nunito', sans-serif;
@@ -404,18 +404,21 @@
 <script>
 const EMOJIS = {
   animals: [
+    { e: '🦫', n: 'beaver' }, { e: '🦎', n: 'lizard' }, { e: '🥔', n: 'potato' },
+    { e: '🍞', n: 'loaf' }, { e: '❤️', n: 'heart' }, { e: '💞', n: 'revolving heart' },
+    { e: '🐵', n: 'yumi' },
     { e: '🐶', n: 'dog' }, { e: '🐱', n: 'cat' }, { e: '🐭', n: 'mouse' },
     { e: '🐹', n: 'hamster' }, { e: '🐰', n: 'rabbit' }, { e: '🦊', n: 'fox' },
     { e: '🐻', n: 'bear' }, { e: '🐼', n: 'panda' }, { e: '🐨', n: 'koala' },
     { e: '🐯', n: 'tiger' }, { e: '🦁', n: 'lion' }, { e: '🐮', n: 'cow' },
-    { e: '🐷', n: 'pig' }, { e: '🐸', n: 'frog' }, { e: '🐵', n: 'monkey' },
+    { e: '🐷', n: 'pig' }, { e: '🐸', n: 'frog' }, //{ e: '🐵', n: 'monkey' },
     { e: '🐔', n: 'chicken' }, { e: '🐧', n: 'penguin' }, { e: '🐦', n: 'bird' },
     { e: '🦆', n: 'duck' }, { e: '🦅', n: 'eagle' }, { e: '🦉', n: 'owl' },
     { e: '🦇', n: 'bat' }, { e: '🐺', n: 'wolf' }, { e: '🐗', n: 'boar' },
     { e: '🐴', n: 'horse' }, { e: '🦄', n: 'unicorn' }, { e: '🐝', n: 'bee' },
     { e: '🐛', n: 'caterpillar' }, { e: '🦋', n: 'butterfly' }, { e: '🐌', n: 'snail' },
     { e: '🐞', n: 'ladybug' }, { e: '🐜', n: 'ant' }, { e: '🦟', n: 'mosquito' },
-    { e: '🦎', n: 'lizard' }, { e: '🐍', n: 'snake' }, { e: '🦕', n: 'dinosaur' },
+    { e: '🐍', n: 'snake' }, { e: '🦕', n: 'dinosaur' },
     { e: '🦖', n: 'T-rex' }, { e: '🐢', n: 'turtle' }, { e: '🐊', n: 'crocodile' },
     { e: '🦈', n: 'shark' }, { e: '🐬', n: 'dolphin' }, { e: '🐳', n: 'whale' },
     { e: '🐟', n: 'fish' }, { e: '🐙', n: 'octopus' }, { e: '🦑', n: 'squid' },
